@@ -2,40 +2,163 @@
 <html lang="en">
   <head>
     <title>Custom Index Creator</title>
-    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css"
+    />
   </head>
   <body>
+    <button onclick="removeSelectedRows()">Remove Selected Rows</button>
+
     <div
-      id="myGrid"
-      style="height: 100px; width: 500px;"
+      id="metrics"
+      style="height: 300px; width: 800px;"
+      class="ag-theme-alpine"
+    ></div>
+
+    <div
+      id="fullData"
+      style="height: 600px; width: 800px;"
       class="ag-theme-alpine"
     ></div>
 
     <script>
+      const cellFormatter = function (text) {
+        return parseFloat(text.value);
+      };
       var columnDefs = [
-        { headerName: 'Make', field: 'make' },
-        { headerName: 'Model', field: 'model' },
-        { headerName: 'Price', field: 'price' },
+        {
+          headerName: 'Name',
+          field: 'name',
+          sortable: true,
+          filter: true,
+          checkboxSelection: true,
+          editable: true,
+        },
+        {
+          headerName: 'Customizable',
+          value: 70,
+          field: 'metric1',
+          sortable: true,
+          filter: true,
+          editable: true,
+          cellEditor: 'agTextCellEditor',
+          valueParser: 'parseFloat(newValue)',
+          maxWidth: 150,
+          filter: 'agNumberColumnFilter',
+          filterParams: {
+            buttons: ['apply', 'reset'],
+            closeOnApply: true,
+          },
+        },
+        {
+          headerName: 'Number of Features',
+          value: 30,
+          field: 'metric2',
+          sortable: true,
+          filter: true,
+          editable: true,
+          cellEditor: 'agTextCellEditor',
+          maxWidth: 150,
+          filter: 'agNumberColumnFilter',
+          valueParser: 'parseFloat(newValue)',
+          filterParams: {
+            buttons: ['apply', 'reset'],
+            closeOnApply: true,
+          },
+        },
+        {
+          headerName: 'Index',
+          valueGetter: function (data) {
+            return (
+              data.data.metric1 * (columnDefs[1].value / 100) +
+              data.data.metric2 * (columnDefs[2].value / 100)
+            );
+          },
+          maxWidth: 120,
+          sortable: true,
+          filter: true,
+        },
       ];
 
       // specify the data
       var rowData = [
-        { make: 'Toyota', model: 'Celica', price: 35000 },
-        { make: 'Ford', model: 'Mondeo', price: 32000 },
-        { make: 'Porsche', model: 'Boxter', price: 72000 },
+        { name: 'Ag-Grid', metric1: 80, metric2: 70 },
+        { name: 'Highcharts', metric1: 60, metric2: 80 },
+        { name: 'Nvd3', metric1: 100, metric2: 60 },
       ];
 
       // let the grid know which columns and what data to use
-      var gridOptions = {
+      var fullDataGridOptions = {
         columnDefs: columnDefs,
         rowData: rowData,
+        defaultColDef: {
+          flex: 1,
+          minWidth: 150,
+          filter: true,
+        },
+      };
+
+      // specify the data
+      var metricsColumnDefs = [
+        {
+          headerName: 'Characteristic Name',
+          field: 'headerName',
+          sortable: true,
+          filter: true,
+          checkboxSelection: true,
+          editable: true,
+        },
+        {
+          headerName: 'Value',
+          field: 'value',
+          sortable: true,
+          filter: true,
+          editable: true,
+          cellEditor: 'agTextCellEditor',
+          valueParser: 'parseFloat(newValue)',
+          maxWidth: 150,
+          filter: 'agNumberColumnFilter',
+          filterParams: {
+            buttons: ['apply', 'reset'],
+            closeOnApply: true,
+          },
+        },
+      ];
+
+      var metricsGridOptions = {
+        columnDefs: metricsColumnDefs,
+        rowData: columnDefs.slice(1),
+        defaultColDef: {
+          flex: 1,
+          minWidth: 150,
+          filter: true,
+        },
       };
 
       // setup the grid after the page has finished loading
       document.addEventListener('DOMContentLoaded', function () {
-        var gridDiv = document.querySelector('#myGrid');
-        new agGrid.Grid(gridDiv, gridOptions);
+        var fullDataGridDiv = document.querySelector('#fullData');
+        new agGrid.Grid(fullDataGridDiv, fullDataGridOptions);
+
+        var metricsGridDiv = document.querySelector('#metrics');
+        new agGrid.Grid(metricsGridDiv, metricsGridOptions);
       });
+
+      function removeSelectedRows() {
+        var selectedNodes = gridOptions.api.getSelectedNodes();
+        const itemsToRemove = selectedNodes.map((node) =>
+          parseInt(node.getRowIndexString())
+        );
+        rowData = rowData.filter((data, index) => {
+          return itemsToRemove.includes(index);
+        });
+      }
     </script>
   </body>
 </html>
