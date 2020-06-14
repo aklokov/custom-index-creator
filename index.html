@@ -33,6 +33,18 @@
       };
       var columnDefs = [
         {
+          headerName: 'Index',
+          valueGetter: function (data) {
+            return (
+              data.data.metric1 * (columnDefs[1].value / 100) +
+              data.data.metric2 * (columnDefs[2].value / 100)
+            );
+          },
+          maxWidth: 120,
+          sortable: true,
+          filter: true,
+        },
+        {
           headerName: 'Name',
           field: 'name',
           sortable: true,
@@ -71,18 +83,6 @@
             buttons: ['apply', 'reset'],
             closeOnApply: true,
           },
-        },
-        {
-          headerName: 'Index',
-          valueGetter: function (data) {
-            return (
-              data.data.metric1 * (columnDefs[1].value / 100) +
-              data.data.metric2 * (columnDefs[2].value / 100)
-            );
-          },
-          maxWidth: 120,
-          sortable: true,
-          filter: true,
         },
       ];
 
@@ -133,7 +133,7 @@
 
       var metricsGridOptions = {
         columnDefs: metricsColumnDefs,
-        rowData: columnDefs.slice(1),
+        rowData: columnDefs.slice(2),
         defaultColDef: {
           flex: 1,
           minWidth: 150,
